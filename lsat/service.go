@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -15,6 +16,10 @@ const (
 	// capabilities caveat. For example, the condition of a capabilities
 	// caveat for a service named `loop` would be `loop_capabilities`.
 	CondCapabilitiesSuffix = "_capabilities"
+
+	// CondTimeoutSuffix is the condition suffix used for
+	// a service's timeout caveat. 
+	CondTimeoutSuffix = "_timeout"
 )
 
 var (
@@ -128,4 +133,14 @@ func NewCapabilitiesCaveat(serviceName string, capabilities string) Caveat {
 		Condition: serviceName + CondCapabilitiesSuffix,
 		Value:     capabilities,
 	}
+}
+
+func NewTimeoutCaveat(serviceName string, seconds int64) Caveat {
+			macaroonTimeout := time.Duration(seconds)
+			requestTimeout := time.Now().Add(time.Second * macaroonTimeout).Unix()
+			value := strconv.FormatInt(requestTimeout, 10)
+			return Caveat{
+				Condition: serviceName + CondTimeoutSuffix, 
+				Value: value,
+			}
 }

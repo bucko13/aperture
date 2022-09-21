@@ -60,6 +60,10 @@ type ServiceLimiter interface {
 	// enforces additional constraints on a particular service/service
 	// capability.
 	ServiceConstraints(context.Context, ...lsat.Service) ([]lsat.Caveat, error)
+
+	// ServiceTimeouts returns the timeout caveat for each service. This will
+	// determine if and when service access can expire
+	ServiceTimeouts(context.Context, ...lsat.Service) ([]lsat.Caveat, error)
 }
 
 // Config packages all of the required dependencies to instantiate a new LSAT
@@ -210,10 +214,15 @@ func (m *Mint) caveatsForServices(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
+	timeouts, err := m.cfg.ServiceLimiter.ServiceTimeouts(ctx, services...,)
+	if err != nil {
+		return nil, err
+	}
 
 	caveats := []lsat.Caveat{servicesCaveat}
 	caveats = append(caveats, capabilities...)
 	caveats = append(caveats, constraints...)
+	caveats = append(caveats, timeouts...)
 	return caveats, nil
 }
 
