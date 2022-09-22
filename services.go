@@ -14,7 +14,7 @@ import (
 type staticServiceLimiter struct {
 	capabilities map[lsat.Service]lsat.Caveat
 	constraints  map[lsat.Service][]lsat.Caveat
-	timeouts		 map[lsat.Service]lsat.Caveat
+	timeouts  map[lsat.Service]lsat.Caveat
 }
 
 // A compile-time constraint to ensure staticServiceLimiter implements

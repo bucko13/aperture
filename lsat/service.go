@@ -135,6 +135,8 @@ func NewCapabilitiesCaveat(serviceName string, capabilities string) Caveat {
 	}
 }
 
+// NewTimeoutCaveat creates a new caveat for calculating an expiration 
+// for an lsat [seconds] from creation time.
 func NewTimeoutCaveat(serviceName string, seconds int64) Caveat {
 			macaroonTimeout := time.Duration(seconds)
 			requestTimeout := time.Now().Add(time.Second * macaroonTimeout).Unix()
