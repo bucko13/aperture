@@ -14,7 +14,7 @@ import (
 type staticServiceLimiter struct {
 	capabilities map[lsat.Service]lsat.Caveat
 	constraints  map[lsat.Service][]lsat.Caveat
-	timeouts  map[lsat.Service]lsat.Caveat
+	timeouts     map[lsat.Service]lsat.Caveat
 }
 
 // A compile-time constraint to ensure staticServiceLimiter implements
@@ -38,7 +38,7 @@ func newStaticServiceLimiter(proxyServices []*proxy.Service) *staticServiceLimit
 		if proxyService.Timeout > 0 {
 			timeouts[s] = lsat.NewTimeoutCaveat(proxyService.Name, proxyService.Timeout)
 		}
-		
+
 		capabilities[s] = lsat.NewCapabilitiesCaveat(
 			proxyService.Name, proxyService.Capabilities,
 		)
@@ -51,7 +51,7 @@ func newStaticServiceLimiter(proxyServices []*proxy.Service) *staticServiceLimit
 	return &staticServiceLimiter{
 		capabilities: capabilities,
 		constraints:  constraints,
-		timeouts: timeouts,
+		timeouts:     timeouts,
 	}
 }
 

@@ -19,7 +19,7 @@ const (
 
 	// CondTimeoutSuffix is the condition suffix used for
 	// a service's timeout caveat. 
-	CondTimeoutSuffix = "_timeout"
+	CondTimeoutSuffix = "_valid_until"
 )
 
 var (

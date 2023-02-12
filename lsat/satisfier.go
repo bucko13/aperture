@@ -2,7 +2,9 @@ package lsat
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
+	"time"
 )
 
 // Satisfier provides a generic interface to satisfy a caveat based on its
@@ -112,6 +114,61 @@ func NewCapabilitiesSatisfier(service string, targetCapability string) Satisfier
 			}
 			return fmt.Errorf("target capability %v not authorized",
 				targetCapability)
+		},
+	}
+}
+
+// A satisfier to check if an LSAT is expired or not.
+// The Satisfier takes a service name to set as the condition prefix 
+// and currentTimestamp to compare against the expiration(s) in the caveats. The the expiration time
+// is retrieved from the caveat values themselves. The satisfier
+// will also make sure that each subsequent caveat of the same condition only has increasingly
+// strict expirations.
+func NewTimeoutSatisfier(service string, currentTimestamp int64) Satisfier {
+	return Satisfier {
+		Condition: service + CondTimeoutSuffix,
+
+		// check that each caveat is more restrictive than the previous
+		SatisfyPrevious: func(prev, cur Caveat) error {
+			prevValue, prevValErr := strconv.ParseInt(prev.Value, 10, 64)
+			currValue, currValErr := strconv.ParseInt(cur.Value, 10, 64)
+			
+			if prevValErr != nil || currValErr != nil {
+				return fmt.Errorf("caveat value not a valid integer")
+			}
+			
+			prevTime := time.Unix(prevValue, 0)
+			currTime := time.Unix(currValue, 0)
+			
+			// Satisfier should fail if a previous timestamp in the list is
+			// earlier than ones after it b/c that means they are getting
+			// more permissive. 
+			if prevTime.Before(currTime) {
+				return fmt.Errorf("%s caveat violates increasing " +
+				"restrictiveness", service + CondTimeoutSuffix)
+			}
+			
+			return nil
+		},
+
+		// make sure that the final relevant caveat is not passed
+		// the current date/time
+		SatisfyFinal: func(c Caveat) error {
+			expirationTimestamp, err := strconv.ParseInt(c.Value, 10, 64)
+			
+			if err != nil {
+				// should never reach here 
+				return fmt.Errorf("caveat value not a valid integer")
+			}
+
+			expirationTime := time.Unix(expirationTimestamp, 0)
+			currentTime := time.Unix(currentTimestamp, 0)
+			
+			if currentTime.Before(expirationTime) {
+				return nil
+			}
+			
+			return fmt.Errorf("not authorized to upload file. LSAT has expired")
 		},
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/lightninglabs/aperture/lsat"
 	"github.com/lightningnetwork/lnd/lntypes"
@@ -214,7 +215,7 @@ func (m *Mint) caveatsForServices(ctx context.Context,
 	if err != nil {
 		return nil, err
 	}
-	timeouts, err := m.cfg.ServiceLimiter.ServiceTimeouts(ctx, services...,)
+	timeouts, err := m.cfg.ServiceLimiter.ServiceTimeouts(ctx, services...)
 	if err != nil {
 		return nil, err
 	}
@@ -278,6 +279,6 @@ func (m *Mint) VerifyLSAT(ctx context.Context, params *VerificationParams) error
 		caveats = append(caveats, caveat)
 	}
 	return lsat.VerifyCaveats(
-		caveats, lsat.NewServicesSatisfier(params.TargetService),
+		caveats, lsat.NewServicesSatisfier(params.TargetService), lsat.NewTimeoutSatisfier(params.TargetService, time.Now().Unix()),
 	)
 }
