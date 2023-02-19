@@ -225,3 +225,53 @@ func TestDemotedServicesLSAT(t *testing.T) {
 		t.Fatal("expected macaroon to be invalid")
 	}
 }
+
+func TestExpiredServicesLSAT(t *testing.T) {
+	t.Parallel()
+
+	ctx := context.Background()
+	mint := New(&Config{
+		Secrets:        newMockSecretStore(),
+		Challenger:     newMockChallenger(),
+		ServiceLimiter: newMockServiceLimiter(),
+	}, &TestTime{})
+
+	// Mint a new lsat for accessing a test service
+	mac, _, err := mint.MintLSAT(ctx, testService)
+	if err != nil {
+		t.Fatalf("unable to mint LSAT: %v", err)
+	}
+
+	// It should be able to access the service if no timeout caveat added
+	authorizedParams := VerificationParams{
+		Macaroon:      mac,
+		Preimage:      testPreimage,
+		TargetService: testService.Name,
+	}
+	if err := mint.VerifyLSAT(ctx, &authorizedParams); err != nil {
+		t.Fatalf("unable to verify LSAT: %v", err)
+	}
+
+	// add a timeout caveat that expires in the future
+	timeout := lsat.NewTimeoutCaveat(testService.Name, 1000, &TestTime{})
+
+	err = lsat.AddFirstPartyCaveats(mac, timeout)
+	if err != nil {
+		t.Fatalf("unable to add caveat to LSAT: %v", err)
+	}
+
+	// now add an expired timeout caveat
+
+	expired := lsat.NewTimeoutCaveat(testService.Name, -1000, &TestTime{})
+
+	err = lsat.AddFirstPartyCaveats(mac, expired)
+	if err != nil {
+		t.Fatalf("unable to add caveat to LSAT: %v", err)
+	}
+
+	// It should now be timed out of access
+	err = mint.VerifyLSAT(ctx, &authorizedParams)
+	if !strings.Contains(err.Error(), "not authorized") {
+		t.Fatal("expected macaroon to be invalid")
+	}
+}

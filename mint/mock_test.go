@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"math/rand"
+	"time"
 
 	"github.com/lightninglabs/aperture/lsat"
 	"github.com/lightningnetwork/lnd/lntypes"
@@ -28,6 +29,16 @@ func newMockChallenger() *mockChallenger {
 
 func (d *mockChallenger) NewChallenge(price int64) (string, lntypes.Hash, error) {
 	return testPayReq, testHash, nil
+}
+
+type TestTime struct {
+	TimeProvider
+}
+
+// a mocked Now to always get a consistent time for tests
+func (t *TestTime) Now() time.Time {
+	now, _ := time.Parse(time.RFC3339, "2022-09-19T22:02:015Z")
+	return now
 }
 
 type mockSecretStore struct {
@@ -73,7 +84,7 @@ func newMockSecretStore() *mockSecretStore {
 type mockServiceLimiter struct {
 	capabilities map[lsat.Service]lsat.Caveat
 	constraints  map[lsat.Service][]lsat.Caveat
-	timeouts map[lsat.Service]lsat.Caveat
+	timeouts     map[lsat.Service]lsat.Caveat
 }
 
 var _ ServiceLimiter = (*mockServiceLimiter)(nil)
@@ -82,7 +93,7 @@ func newMockServiceLimiter() *mockServiceLimiter {
 	return &mockServiceLimiter{
 		capabilities: make(map[lsat.Service]lsat.Caveat),
 		constraints:  make(map[lsat.Service][]lsat.Caveat),
-		timeouts:  make(map[lsat.Service]lsat.Caveat),
+		timeouts:     make(map[lsat.Service]lsat.Caveat),
 	}
 }
 
