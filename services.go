@@ -36,7 +36,11 @@ func newStaticServiceLimiter(proxyServices []*proxy.Service) *staticServiceLimit
 		}
 
 		if proxyService.Timeout > 0 {
-			timeouts[s] = lsat.NewTimeoutCaveat(proxyService.Name, proxyService.Timeout)
+			timeouts[s] = lsat.NewTimeoutCaveat(
+				proxyService.Name,
+				proxyService.Timeout,
+				&mint.GetTime{},
+			)
 		}
 
 		capabilities[s] = lsat.NewCapabilitiesCaveat(

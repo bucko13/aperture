@@ -83,15 +83,26 @@ type Config struct {
 	ServiceLimiter ServiceLimiter
 }
 
+type GetTime struct {
+	TimeProvider
+}
+
+func (t *GetTime) Now() time.Time {
+	now := time.Now()
+	return now
+}
+
 // Mint is an entity that is able to mint and verify LSATs for a set of
 // services.
 type Mint struct {
 	cfg Config
+
+	timeProvider TimeProvider
 }
 
 // New creates a new LSAT mint backed by its given dependencies.
-func New(cfg *Config) *Mint {
-	return &Mint{cfg: *cfg}
+func New(cfg *Config, timeProvider TimeProvider) *Mint {
+	return &Mint{cfg: *cfg, timeProvider: timeProvider}
 }
 
 // MintLSAT mints a new LSAT for the target services.
@@ -279,6 +290,8 @@ func (m *Mint) VerifyLSAT(ctx context.Context, params *VerificationParams) error
 		caveats = append(caveats, caveat)
 	}
 	return lsat.VerifyCaveats(
-		caveats, lsat.NewServicesSatisfier(params.TargetService), lsat.NewTimeoutSatisfier(params.TargetService, time.Now().Unix()),
+		caveats,
+		lsat.NewServicesSatisfier(params.TargetService),
+		lsat.NewTimeoutSatisfier(params.TargetService, m.timeProvider.Now().Unix()),
 	)
 }

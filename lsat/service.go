@@ -18,7 +18,7 @@ const (
 	CondCapabilitiesSuffix = "_capabilities"
 
 	// CondTimeoutSuffix is the condition suffix used for
-	// a service's timeout caveat. 
+	// a service's timeout caveat.
 	CondTimeoutSuffix = "_valid_until"
 )
 
@@ -135,14 +135,14 @@ func NewCapabilitiesCaveat(serviceName string, capabilities string) Caveat {
 	}
 }
 
-// NewTimeoutCaveat creates a new caveat for calculating an expiration 
+// NewTimeoutCaveat creates a new caveat for calculating an expiration
 // for an lsat [seconds] from creation time.
-func NewTimeoutCaveat(serviceName string, seconds int64) Caveat {
-			macaroonTimeout := time.Duration(seconds)
-			requestTimeout := time.Now().Add(time.Second * macaroonTimeout).Unix()
-			value := strconv.FormatInt(requestTimeout, 10)
-			return Caveat{
-				Condition: serviceName + CondTimeoutSuffix, 
-				Value: value,
-			}
+func NewTimeoutCaveat(serviceName string, seconds int64, timeProvider TimeProvider) Caveat {
+	macaroonTimeout := time.Duration(seconds)
+	requestTimeout := timeProvider.Now().Add(time.Second * macaroonTimeout).Unix()
+	value := strconv.FormatInt(requestTimeout, 10)
+	return Caveat{
+		Condition: serviceName + CondTimeoutSuffix,
+		Value:     value,
+	}
 }

@@ -27,7 +27,7 @@ func TestBasicLSAT(t *testing.T) {
 		Secrets:        newMockSecretStore(),
 		Challenger:     newMockChallenger(),
 		ServiceLimiter: newMockServiceLimiter(),
-	})
+	}, &TestTime{})
 
 	// Mint a basic LSAT which is only able to access the given service.
 	macaroon, _, err := mint.MintLSAT(ctx, testService)
@@ -63,7 +63,7 @@ func TestAdminLSAT(t *testing.T) {
 		Secrets:        newMockSecretStore(),
 		Challenger:     newMockChallenger(),
 		ServiceLimiter: newMockServiceLimiter(),
-	})
+	}, &TestTime{})
 
 	// Mint an admin LSAT by not including any services.
 	macaroon, _, err := mint.MintLSAT(ctx)
@@ -92,7 +92,7 @@ func TestRevokedLSAT(t *testing.T) {
 		Secrets:        newMockSecretStore(),
 		Challenger:     newMockChallenger(),
 		ServiceLimiter: newMockServiceLimiter(),
-	})
+	}, &TestTime{})
 
 	// Mint an LSAT and verify it.
 	lsat, _, err := mint.MintLSAT(ctx)
@@ -128,7 +128,7 @@ func TestTamperedLSAT(t *testing.T) {
 		Secrets:        newMockSecretStore(),
 		Challenger:     newMockChallenger(),
 		ServiceLimiter: newMockServiceLimiter(),
-	})
+	}, &TestTime{})
 
 	// Mint a new LSAT and verify it is valid.
 	mac, _, err := mint.MintLSAT(ctx, testService)
@@ -175,7 +175,7 @@ func TestDemotedServicesLSAT(t *testing.T) {
 		Secrets:        newMockSecretStore(),
 		Challenger:     newMockChallenger(),
 		ServiceLimiter: newMockServiceLimiter(),
-	})
+	}, &TestTime{})
 
 	unauthorizedService := testService
 	unauthorizedService.Name = "unauthorized"

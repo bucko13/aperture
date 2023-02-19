@@ -627,7 +627,7 @@ func createProxy(cfg *Config, challenger *LndChallenger,
 		Challenger:     challenger,
 		Secrets:        newSecretStore(etcdClient),
 		ServiceLimiter: newStaticServiceLimiter(cfg.Services),
-	})
+	}, &mint.GetTime{})
 	authenticator := auth.NewLsatAuthenticator(minter, challenger)
 
 	// By default the static file server only returns 404 answers for
